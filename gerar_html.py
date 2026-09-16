@@ -1,73 +1,94 @@
 import pandas as pd
 
-# 1. Ler o arquivo Excel (ajuste o nome se a sua planilha tiver outro nome)
-df = pd.read_excel('dados.xlsx')
+# 1. Carregar a aba principal de registros 'BROA'
+# (Caso queira alterar para outra aba, mude sheet_name)
+nome_arquivo = 'Resumo_BROA_2026-09-14 _2.xlsx'
 
-# 2. Converter a planilha em uma tabela HTML
-tabela_html = df.to_html(classes='tabela-excel', index=False, na_rep='')
+try:
+    df = pd.read_excel(nome_arquivo, sheet_name='BROA')
+except Exception as e:
+    # Caso o arquivo enviado na atualização tenha um nome padronizado
+    df = pd.read_excel('dados.xlsx', sheet_name='BROA')
 
-# 3. Estruturar a página HTML com estilo
+# Limpeza e formatação básica
+df = df.dropna(how='all') # remove linhas completamente vazias
+
+# Converter dataframe para HTML
+tabela_html = df.to_html(classes='table table-striped table-hover', index=False, na_rep='')
+
 html_completo = f"""<!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Painel de Dados</title>
+    <title>Portal Executivo - Gestão de Ações BROA</title>
+
+    <!-- DataTables & Bootstrap para filtros, busca e navegação interativa -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    
     <style>
         body {{
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 30px;
-            background-color: #f8f9fa;
-            color: #333;
+            background-color: #f4f6f9;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            padding: 25px;
         }}
-        h1 {{
-            color: #1a252f;
-            text-align: center;
-            margin-bottom: 20px;
-        }}
-        .container {{
-            max-width: 90%;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            overflow-x: auto;
-        }}
-        .tabela-excel {{
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 14px;
-        }}
-        .tabela-excel th {{
-            background-color: #2c3e50;
+        .header-box {{
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
             color: white;
-            padding: 12px;
-            text-align: left;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }}
-        .tabela-excel td {{
-            padding: 10px;
-            border-bottom: 1px solid #e0e0e0;
+        .card-container {{
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
         }}
-        .tabela-excel tr:nth-child(even) {{
-            background-color: #f9f9f9;
-        }}
-        .tabela-excel tr:hover {{
-            background-color: #f1f1f1;
+        table.dataTable thead {{
+            background-color: #1e3c72;
+            color: white;
         }}
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Painel Atualizado</h1>
-        {tabela_html}
+
+    <div class="container-fluid">
+        <div class="header-box">
+            <h2 class="m-0">Gestão de Ações — BROA</h2>
+            <p class="m-0 mt-2 opacity-75">Portal executivo para acompanhamento de prazos, riscos e frentes operacionais</p>
+        </div>
+
+        <div class="card-container">
+            <div class="table-responsive">
+                {tabela_html}
+            </div>
+        </div>
     </div>
+
+    <!-- Scripts para busca, ordenação e paginação automática -->
+    <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+    
+    <script>
+        $(document).ready(function() {{
+            $('table').DataTable({{
+                "language": {{
+                    "url": "//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json"
+                }},
+                "pageLength": 25,
+                "responsive": true
+            }});
+        }});
+    </script>
 </body>
 </html>
 """
 
-# 4. Salvar como index.html
 with open('index.html', 'w', encoding='utf-8') as f:
     f.write(html_completo)
 
-print("Arquivo index.html gerado com sucesso!")
+print("Painel BROA gerado com sucesso!")
